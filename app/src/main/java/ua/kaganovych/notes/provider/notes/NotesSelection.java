@@ -111,4 +111,34 @@ public class NotesSelection extends AbstractSelection<NotesSelection> {
         addEndsWith(NotesColumns.IMAGE, value);
         return this;
     }
+
+    public NotesSelection date(Integer... value) {
+        addEquals(NotesColumns.DATE, value);
+        return this;
+    }
+
+    public NotesSelection dateNot(Integer... value) {
+        addNotEquals(NotesColumns.DATE, value);
+        return this;
+    }
+
+    public NotesSelection dateGt(int value) {
+        addGreaterThan(NotesColumns.DATE, value);
+        return this;
+    }
+
+    public NotesSelection dateGtEq(int value) {
+        addGreaterThanOrEquals(NotesColumns.DATE, value);
+        return this;
+    }
+
+    public NotesSelection dateLt(int value) {
+        addLessThan(NotesColumns.DATE, value);
+        return this;
+    }
+
+    public NotesSelection dateLtEq(int value) {
+        addLessThanOrEquals(NotesColumns.DATE, value);
+        return this;
+    }
 }

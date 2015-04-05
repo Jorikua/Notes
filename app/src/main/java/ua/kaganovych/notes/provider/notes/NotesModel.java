@@ -20,4 +20,10 @@ public interface NotesModel extends BaseModel {
      * Can be {@code null}.
      */
     String getImage();
+
+    /**
+     * Get the {@code date} value.
+     * Can be {@code null}.
+     */
+    Integer getDate();
 }

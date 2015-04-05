@@ -25,15 +25,13 @@ public class MyNotesProvider extends BaseContentProvider {
     public static final String CONTENT_URI_BASE = "content://" + AUTHORITY;
 
     private static final int URI_TYPE_NOTES = 0;
-    private static final int URI_TYPE_NOTE_ID = 1;
-
-
+    private static final int URI_TYPE_NOTES_ID = 1;
 
     private static final UriMatcher URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
 
     static {
         URI_MATCHER.addURI(AUTHORITY, NotesColumns.TABLE_NAME, URI_TYPE_NOTES);
-        URI_MATCHER.addURI(AUTHORITY, NotesColumns.TABLE_NAME + "/#", URI_TYPE_NOTE_ID);
+        URI_MATCHER.addURI(AUTHORITY, NotesColumns.TABLE_NAME + "/#", URI_TYPE_NOTES_ID);
     }
 
     @Override
@@ -52,7 +50,7 @@ public class MyNotesProvider extends BaseContentProvider {
         switch (match) {
             case URI_TYPE_NOTES:
                 return TYPE_CURSOR_DIR + NotesColumns.TABLE_NAME;
-            case URI_TYPE_NOTE_ID:
+            case URI_TYPE_NOTES_ID:
                 return TYPE_CURSOR_ITEM + NotesColumns.TABLE_NAME;
 
         }
@@ -98,7 +96,7 @@ public class MyNotesProvider extends BaseContentProvider {
         int matchedId = URI_MATCHER.match(uri);
         switch (matchedId) {
             case URI_TYPE_NOTES:
-            case URI_TYPE_NOTE_ID:
+            case URI_TYPE_NOTES_ID:
                 res.table = NotesColumns.TABLE_NAME;
                 res.idColumn = NotesColumns._ID;
                 res.tablesWithJoins = NotesColumns.TABLE_NAME;
@@ -110,7 +108,7 @@ public class MyNotesProvider extends BaseContentProvider {
         }
 
         switch (matchedId) {
-            case URI_TYPE_NOTE_ID:
+            case URI_TYPE_NOTES_ID:
                 id = uri.getLastPathSegment();
         }
         if (id != null) {

@@ -16,7 +16,7 @@ public class MyNotesDBHelper extends SQLiteOpenHelper {
     private static final String TAG = MyNotesDBHelper.class.getSimpleName();
 
     public static final String DATABASE_FILE_NAME = "my_notes.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 4;
     private static MyNotesDBHelper sInstance;
     private final Context mContext;
     private final MyNotesDBHelperCallbacks mOpenHelperCallbacks;
@@ -26,7 +26,8 @@ public class MyNotesDBHelper extends SQLiteOpenHelper {
             + NotesColumns.TABLE_NAME + " ( "
             + NotesColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + NotesColumns.DESCRIPTION + " TEXT, "
-            + NotesColumns.IMAGE + " TEXT "
+            + NotesColumns.IMAGE + " TEXT, "
+            + NotesColumns.DATE + " INTEGER "
             + " );";
 
     // @formatter:on

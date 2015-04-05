@@ -45,4 +45,14 @@ public class NotesContentValues extends AbstractContentValues {
         mContentValues.putNull(NotesColumns.IMAGE);
         return this;
     }
+
+    public NotesContentValues putDate(Integer value) {
+        mContentValues.put(NotesColumns.DATE, value);
+        return this;
+    }
+
+    public NotesContentValues putDateNull() {
+        mContentValues.putNull(NotesColumns.DATE);
+        return this;
+    }
 }

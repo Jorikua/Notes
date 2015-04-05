@@ -41,4 +41,13 @@ public class NotesCursor extends AbstractCursor implements NotesModel {
         String res = getStringOrNull(NotesColumns.IMAGE);
         return res;
     }
+
+    /**
+     * Get the {@code date} value.
+     * Can be {@code null}.
+     */
+    public Integer getDate() {
+        Integer res = getIntegerOrNull(NotesColumns.DATE);
+        return res;
+    }
 }

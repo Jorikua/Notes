@@ -4,7 +4,6 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 import ua.kaganovych.notes.provider.MyNotesProvider;
-import ua.kaganovych.notes.provider.notes.NotesColumns;
 
 /**
  * Columns for the {@code notes} table.
@@ -22,6 +21,8 @@ public class NotesColumns implements BaseColumns {
 
     public static final String IMAGE = "image";
 
+    public static final String DATE = "date";
+
 
     public static final String DEFAULT_ORDER = TABLE_NAME + "." +_ID;
 
@@ -29,7 +30,8 @@ public class NotesColumns implements BaseColumns {
     public static final String[] ALL_COLUMNS = new String[] {
             _ID,
             DESCRIPTION,
-            IMAGE
+            IMAGE,
+            DATE
     };
     // @formatter:on
 
@@ -38,6 +40,7 @@ public class NotesColumns implements BaseColumns {
         for (String c : projection) {
             if (c.equals(DESCRIPTION) || c.contains("." + DESCRIPTION)) return true;
             if (c.equals(IMAGE) || c.contains("." + IMAGE)) return true;
+            if (c.equals(DATE) || c.contains("." + DATE)) return true;
         }
         return false;
     }
