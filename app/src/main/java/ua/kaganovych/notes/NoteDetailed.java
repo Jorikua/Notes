@@ -1,18 +1,27 @@
 package ua.kaganovych.notes;
 
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 
+import java.io.IOException;
 import java.util.Calendar;
 
 import ua.kaganovych.notes.provider.notes.NotesColumns;
@@ -20,9 +29,18 @@ import ua.kaganovych.notes.provider.notes.NotesColumns;
 public class NoteDetailed extends ActionBarActivity {
 
     private EditText mDescription;
+    private ImageView mImageView;
     private Uri noteUri;
     private Cursor mCursor;
     private long mTime;
+    private MenuItem mDeleteButton;
+    private MenuItem mShareButton;
+    private boolean b = false;
+
+    private static final int CAPTURE_IMAGE_REQUEST = 100;
+    private static final int PICK_PHOTO_REQUEST = 200;
+
+    private String[] array = {"Camera", "Photo Gallery"};
 
 
     @Override
@@ -30,11 +48,29 @@ public class NoteDetailed extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_detailed);
 
-        mDescription = (EditText) findViewById(R.id.description);
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mImageView = (ImageView)findViewById(R.id.imageView);
+        mDescription = (EditText) findViewById(R.id.description);
+        mDescription.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                updateButton(charSequence);
+                invalidateOptionsMenu();
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
 
         Bundle extras = getIntent().getExtras();
 
@@ -56,7 +92,7 @@ public class NoteDetailed extends ActionBarActivity {
 
     private void saveNote() {
         String description = mDescription.getText().toString();
-        if (description.length() == 0) {
+        if (description.trim().length() == 0) {
             return;
         }
 
@@ -84,9 +120,18 @@ public class NoteDetailed extends ActionBarActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_note_detailed, menu);
+        mDeleteButton = menu.findItem(R.id.delete);
+        mShareButton = menu.findItem(R.id.share);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        mDeleteButton.setEnabled(b);
+        mDeleteButton.setVisible(b);
+        mShareButton.setVisible(b);
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -115,9 +160,56 @@ public class NoteDetailed extends ActionBarActivity {
                 sendIntent.putExtra(Intent.EXTRA_TEXT, mDescription.getText().toString());
                 sendIntent.setType("text/plain");
                 startActivity(Intent.createChooser(sendIntent, "Share text to..."));
+                return true;
+            case R.id.photo:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setItems(array, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int which) {
+                        if (which == 0) {
+                            Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                            startActivityForResult(cameraIntent, CAPTURE_IMAGE_REQUEST);
+                            Log.d("TAG", "Camera");
+                        } else if (which == 1) {
+                            // Create intent for picking a photo from the gallery
+                            Intent intent = new Intent(Intent.ACTION_PICK,
+                                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            // Bring up gallery to select a photo
+                            startActivityForResult(intent, PICK_PHOTO_REQUEST);
+                            Log.d("TAG", "Gallery");
+                        }
+                    }
+                }).show();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case CAPTURE_IMAGE_REQUEST:
+                    Bitmap photo = (Bitmap) data.getExtras().get("data");
+                    mImageView.setVisibility(View.VISIBLE);
+                    mImageView.setImageBitmap(photo);
+                    break;
+                case PICK_PHOTO_REQUEST:
+                    if (data != null) {
+                        Uri photoUri = data.getData();
+                        // Do something with the photo based on Uri
+                        Bitmap selectedImage = null;
+                        try {
+                            selectedImage = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        // Load the selected image into a preview
+                        mImageView.setVisibility(View.VISIBLE);
+                        mImageView.setImageBitmap(selectedImage);
+                    }
+            }
+        }
     }
 
     @Override
@@ -125,5 +217,18 @@ public class NoteDetailed extends ActionBarActivity {
         super.onSaveInstanceState(outState, outPersistentState);
         saveNote();
         outState.putParcelable(MainActivity.PARCELABLE_DATA, noteUri);
+    }
+
+    private void updateButton (CharSequence s){
+        String text = null;
+        if(s != null){
+            text = s.toString();
+        }
+        if(text != null && text.trim().length() != 0){
+            b = true;
+        }
+        else{
+            b = false;
+        }
     }
 }

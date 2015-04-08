@@ -10,4 +10,5 @@
     <string name="action_bar_title_delete_button">Delete</string>
     <string name="action_bar_title_save_button">Save</string>
     <string name="action_bar_title_share_button">Share</string>
+    <string name="action_bar_title_take_photo_button">Take Photo</string>
 </resources>

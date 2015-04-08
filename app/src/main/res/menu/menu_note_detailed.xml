@@ -7,13 +7,19 @@
         android:id="@+id/share"
         android:title="@string/action_bar_title_share_button"
         android:icon="@drawable/ic_share_white_24dp"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/delete"
         android:title="@string/action_bar_title_delete_button"
         android:icon="@drawable/ic_delete_white_24dp"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/photo"
+        android:title="@string/action_bar_title_take_photo_button"
+        android:icon="@drawable/ic_camera_alt_white_24dp"
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/save"
