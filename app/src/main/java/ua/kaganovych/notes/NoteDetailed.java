@@ -43,6 +43,7 @@ public class NoteDetailed extends ActionBarActivity {
 
     public String photoFileName = UUID.randomUUID() + ".jpg";
     private Uri mPhotoUri;
+    private String mImagePath;
 
     private static final int CAPTURE_PHOTO_REQUEST = 100;
     private static final int PICK_PHOTO_FROM_GALLERY_REQUEST = 200;
@@ -80,6 +81,8 @@ public class NoteDetailed extends ActionBarActivity {
         });
 
         mPhotoUri = getPhotoUri(photoFileName);
+        mImagePath = mPhotoUri.getPath();
+        Log.d("TAG", mPhotoUri.getPath());
 
         Bundle extras = getIntent().getExtras();
 
@@ -93,6 +96,10 @@ public class NoteDetailed extends ActionBarActivity {
             if (mCursor != null) {
                 mCursor.moveToFirst();
                 mDescription.setText(mCursor.getString(mCursor.getColumnIndexOrThrow(NotesColumns.DESCRIPTION)));
+            }
+            if (notEmpty(mImagePath)) {
+                mImageView.setVisibility(View.VISIBLE);
+                Picasso.with(this).load(mPhotoUri).into(mImageView);
             }
         }
     }
@@ -231,6 +238,11 @@ public class NoteDetailed extends ActionBarActivity {
             b = false;
         }
     }
+
+    private boolean notEmpty(String v) {
+        return v != null && !v.equals("");
+    }
+
     private Uri getPhotoUri(String fileName) {
         File directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), getPackageName());
         if (!directory.exists() && !directory.mkdirs()) {
