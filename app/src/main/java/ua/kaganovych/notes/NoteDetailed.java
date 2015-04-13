@@ -5,9 +5,9 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.PersistableBundle;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
@@ -21,24 +21,31 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import java.io.IOException;
+import com.squareup.picasso.Picasso;
+
+import java.io.File;
 import java.util.Calendar;
+import java.util.UUID;
 
 import ua.kaganovych.notes.provider.notes.NotesColumns;
 
 public class NoteDetailed extends ActionBarActivity {
 
+    private static final String TAG = "TAG";
+
     private EditText mDescription;
     private ImageView mImageView;
     private Uri noteUri;
     private Cursor mCursor;
-    private long mTime;
     private MenuItem mDeleteButton;
     private MenuItem mShareButton;
     private boolean b = false;
 
-    private static final int CAPTURE_IMAGE_REQUEST = 100;
-    private static final int PICK_PHOTO_REQUEST = 200;
+    public String photoFileName = UUID.randomUUID() + ".jpg";
+    private Uri mPhotoUri;
+
+    private static final int CAPTURE_PHOTO_REQUEST = 100;
+    private static final int PICK_PHOTO_FROM_GALLERY_REQUEST = 200;
 
     private String[] array = {"Camera", "Photo Gallery"};
 
@@ -52,7 +59,7 @@ public class NoteDetailed extends ActionBarActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mImageView = (ImageView)findViewById(R.id.imageView);
+        mImageView = (ImageView) findViewById(R.id.imageView);
         mDescription = (EditText) findViewById(R.id.description);
         mDescription.addTextChangedListener(new TextWatcher() {
             @Override
@@ -72,15 +79,15 @@ public class NoteDetailed extends ActionBarActivity {
             }
         });
 
+        mPhotoUri = getPhotoUri(photoFileName);
+
         Bundle extras = getIntent().getExtras();
 
-        noteUri = (savedInstanceState == null) ? null : (Uri) savedInstanceState.getParcelable(MainActivity.PARCELABLE_DATA);
+        noteUri = (savedInstanceState == null) ? null : (Uri) savedInstanceState.getParcelable(MainActivity.PARCELABLE_URI_DATA);
 
-        Calendar calendar = Calendar.getInstance();
-        mTime = calendar.getTimeInMillis();
 
         if (extras != null) {
-            noteUri = extras.getParcelable(MainActivity.PARCELABLE_DATA);
+            noteUri = extras.getParcelable(MainActivity.PARCELABLE_URI_DATA);
             String[] projection = NotesColumns.ALL_COLUMNS;
             mCursor = getContentResolver().query(noteUri, projection, null, null, null);
             if (mCursor != null) {
@@ -96,9 +103,12 @@ public class NoteDetailed extends ActionBarActivity {
             return;
         }
 
+        Calendar calendar = Calendar.getInstance();
+        long time = calendar.getTimeInMillis();
+
         ContentValues cv = new ContentValues();
         cv.put(NotesColumns.DESCRIPTION, mDescription.getText().toString());
-        cv.put(NotesColumns.DATE, mTime);
+        cv.put(NotesColumns.DATE, time);
         if (noteUri == null) {
             getContentResolver().insert(NotesColumns.CONTENT_URI, cv);
         } else if (mCursor != null) {
@@ -128,7 +138,6 @@ public class NoteDetailed extends ActionBarActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        mDeleteButton.setEnabled(b);
         mDeleteButton.setVisible(b);
         mShareButton.setVisible(b);
         return super.onPrepareOptionsMenu(menu);
@@ -168,14 +177,13 @@ public class NoteDetailed extends ActionBarActivity {
                     public void onClick(DialogInterface dialogInterface, int which) {
                         if (which == 0) {
                             Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-                            startActivityForResult(cameraIntent, CAPTURE_IMAGE_REQUEST);
+                            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, mPhotoUri);
+                            startActivityForResult(cameraIntent, CAPTURE_PHOTO_REQUEST);
                             Log.d("TAG", "Camera");
                         } else if (which == 1) {
-                            // Create intent for picking a photo from the gallery
                             Intent intent = new Intent(Intent.ACTION_PICK,
                                     MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                            // Bring up gallery to select a photo
-                            startActivityForResult(intent, PICK_PHOTO_REQUEST);
+                            startActivityForResult(intent, PICK_PHOTO_FROM_GALLERY_REQUEST);
                             Log.d("TAG", "Gallery");
                         }
                     }
@@ -187,48 +195,47 @@ public class NoteDetailed extends ActionBarActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
-            switch (requestCode) {
-                case CAPTURE_IMAGE_REQUEST:
-                    Bitmap photo = (Bitmap) data.getExtras().get("data");
+        switch (requestCode) {
+            case CAPTURE_PHOTO_REQUEST:
+                if (resultCode == RESULT_OK) {
                     mImageView.setVisibility(View.VISIBLE);
-                    mImageView.setImageBitmap(photo);
+                    Picasso.with(NoteDetailed.this).load(mPhotoUri).into(mImageView);
                     break;
-                case PICK_PHOTO_REQUEST:
-                    if (data != null) {
-                        Uri photoUri = data.getData();
-                        // Do something with the photo based on Uri
-                        Bitmap selectedImage = null;
-                        try {
-                            selectedImage = MediaStore.Images.Media.getBitmap(this.getContentResolver(), photoUri);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        // Load the selected image into a preview
-                        mImageView.setVisibility(View.VISIBLE);
-                        mImageView.setImageBitmap(selectedImage);
-                    }
-            }
+                }
+            case PICK_PHOTO_FROM_GALLERY_REQUEST:
+                if (data != null) {
+                    Uri photoUri = data.getData();
+                    mImageView.setVisibility(View.VISIBLE);
+                    Picasso.with(NoteDetailed.this).load(photoUri).into(mImageView);
+                    break;
+                }
         }
+
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
         saveNote();
-        outState.putParcelable(MainActivity.PARCELABLE_DATA, noteUri);
+        outState.putParcelable(MainActivity.PARCELABLE_URI_DATA, noteUri);
     }
 
-    private void updateButton (CharSequence s){
+    private void updateButton(CharSequence s) {
         String text = null;
-        if(s != null){
+        if (s != null) {
             text = s.toString();
         }
-        if(text != null && text.trim().length() != 0){
+        if (text != null && text.trim().length() != 0) {
             b = true;
-        }
-        else{
+        } else {
             b = false;
         }
+    }
+    private Uri getPhotoUri(String fileName) {
+        File directory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), getPackageName());
+        if (!directory.exists() && !directory.mkdirs()) {
+            Log.d(TAG, "failed to create directory");
+        }
+        return Uri.fromFile(new File(directory.getPath() + File.separator + fileName));
     }
 }

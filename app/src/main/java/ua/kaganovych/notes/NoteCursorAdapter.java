@@ -62,7 +62,7 @@ public class NoteCursorAdapter extends CursorAdapter {
 
         calendar.setTimeInMillis(calendar.getTimeInMillis() - DateUtils.DAY_IN_MILLIS);
         sDateYesterdayZero = new Date(calendar.getTimeInMillis());
-        calendar.setTimeInMillis(calendar.getTimeInMillis() - DateUtils.WEEK_IN_MILLIS);
+        calendar.setTimeInMillis(calendar.getTimeInMillis() - DateUtils.WEEK_IN_MILLIS + DateUtils.DAY_IN_MILLIS*2);
         sDateLastWeekZero = new Date(calendar.getTimeInMillis());
 
         sDateFormatToday = new SimpleDateFormat("HH:mm", Locale.getDefault());

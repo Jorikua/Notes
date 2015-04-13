@@ -13,8 +13,6 @@ import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -23,7 +21,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.ListView;
 
 import com.melnykov.fab.FloatingActionButton;
@@ -38,7 +35,7 @@ public class MainActivity extends ActionBarActivity implements LoaderManager.Loa
     private String mQuery;
     private Cursor mCursor;
     
-    public static final String PARCELABLE_DATA = "ua.kaganovych.notes.data";
+    public static final String PARCELABLE_URI_DATA = "ua.kaganovych.notes.data";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +105,7 @@ public class MainActivity extends ActionBarActivity implements LoaderManager.Loa
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
                 Intent intent = new Intent(MainActivity.this, NoteDetailed.class);
                 Uri noteUri = Uri.parse(NotesColumns.CONTENT_URI + "/" + id);
-                intent.putExtra(PARCELABLE_DATA, noteUri);
+                intent.putExtra(PARCELABLE_URI_DATA, noteUri);
                 startActivity(intent);
             }
         });
